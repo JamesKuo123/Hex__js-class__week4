@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 4</title>
+    <!-- font-family: 'Roboto', sans-serif; -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <!-- icon cdn-->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="./style/all.css">
+</head>
+
+<body>
+    <div id="app">
+        <div class="container container-products">
+            <header class="header">
+                <div class="login">
+                    Product List
+                </div>
+                <a href="#" class="btn btn-primary addnew" @click.prevent='openAddNewProductModal'>Add New Product</a>
+            </header>
+            <div class="body body-products">
+                <table class="table">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">Category</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Original Price</th>
+                            <th scope="col">Price</th>
+                            <th scope="col">For Sale</th>
+                            <th scope="col">Edit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(product,index) in products" :key="index">
+                            <td>{{product.category}}</td>
+                            <th>{{product.title}}</th>
+                            <td>{{product.origin_price}}</td>
+                            <td>{{product.price}}</td>
+                            <td>
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="product.id+'_checkbox'"
+                                        v-model='product.enabled'>
+                                    <label class="custom-control-label"
+                                        for="product.id+'_checkbox'">{{product.enabled? 'On':'Off'}}</label>
+                                </div>
+                            </td>
+                            <td>
+                                <a href="#" class="btn btn-info material-icons"
+                                    @click.prevent='openEditProductModal(product)'>edit</a>
+                                <a href="#" class="btn btn-danger material-icons"
+                                    @click.prevent='openDeleteProductModal(product)'>delete</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <footer class="footer">
+                <pagination :appproducts='this.pagination' @emitpagination='getProducts'></pagination>
+            </footer>
+            <add-new-product-modal :apptempproduct='tempProduct' @emitproduct='addNewProduct'>
+            </add-new-product-modal>
+            <edit-product-modal :apptempproduct='tempProduct' @emitproduct='editProduct'>
+            </edit-product-modal>
+            <delete-product-modal :apptempproduct='tempProduct' @emitproduct='deleteProduct'>
+            </delete-product-modal>
+        </div>
+    </div>
+
+
+    <!-- BS4 -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
+        integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
+        crossorigin="anonymous"></script>
+    <!-- Vue -->
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <!-- axios -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <!-- vue component 'pagination' -->
+    <script type="module">
+        Vue.component('pagination', {
+            template: '#paginationTemplate',
+            props: ['appproducts'],
+            methods: {
+                emitPage(whichPage) {
+                    this.$emit('emitpagination', whichPage);
+                }
+            },
+        })
+    </script>
+    <!-- vue component 'pagination' template -->
+    <script type="text/x-template" id="paginationTemplate">
+        <nav>
+            <ul class="pagination">
+                <li class="page-item">
+                    <a class="page-link" href="#" aria-label="Previous" @click.prevent='emitPage(appproducts.current_page-1)'>
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                <li class="page-item" v-for="eachPage in appproducts.total_pages" :key='eachPage'>
+                    <a class="page-link" href="#"  @click.prevent='emitPage(eachPage)'>{{eachPage}}</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="#" aria-label="Next" @click.prevent='emitPage(appproducts.current_page+1)'>
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </script>
+
+    <!-- vue component 'add-new-product-modal' -->
+    <script type="module">
+        Vue.component('add-new-product-modal', {
+            template: '#addNewProductModalTemplate',
+            props: ['apptempproduct'],
+            data() {
+                return {
+                }
+            },
+            methods: {
+                emitproduct() {
+                    this.$emit('emitproduct', this.apptempproduct);
+                }
+            }
+        })
+    </script>
+    <!-- vue component 'add-new-product-modal template' -->
+    <script type="text/x-template" id="addNewProductModalTemplate">
+        <div class="modal fade" id="addNewProductModal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Add New Product</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  <form>
+                    <div class="form-group">
+                      <label class="w100">
+                        <span>Product title</span>
+                        <input type="text" class="form-control" v-model='apptempproduct.title'>
+                      </label>
+                      <label class="w50">
+                        <span>Category</span>
+                        <input type="text" class="form-control" v-model='apptempproduct.category'>
+                      </label>
+                      <label class="w50">
+                        <span>Unit</span>
+                        <input type="text" class="form-control" v-model='apptempproduct.unit'>
+                      </label>
+                      <label class="w50">
+                        <span>Original Price</span>
+                        <input type="number" class="form-control" v-model='apptempproduct.origin_price'>
+                      </label>
+                      <label class="w50">
+                        <span>Price</span>
+                        <input type="number" class="form-control" v-model='apptempproduct.price'>
+                      </label>
+                      <hr>
+                      <label class="w100">
+                        <span>Description</span>
+                        <textarea rows="3" placeholder="product description" class="form-control" v-model='apptempproduct.description'></textarea>
+                      </label>
+                      <label class="w100">
+                        <span>Content</span>
+                        <textarea rows="3" placeholder="product content" class="form-control" v-model='apptempproduct.content'></textarea>
+                      </label>
+                      <hr>
+                      <label class="w100">
+                        <span>Product Photo</span>
+                        <input type="url" class="form-control" v-model='apptempproduct.imageUrl[0]'>
+                        <img :src="apptempproduct.imageUrl[0]" alt="" class='form__img'>
+                      </label>
+                    </div>
+                  </form>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                  <button type="button" class="btn btn-primary" @click.prevent='emitproduct'>Add</button>
+                </div>
+              </div>
+            </div>
+          </div>
+    </script>
+
+    <!-- vue component 'edit-product-modal' -->
+    <script type="module">
+        Vue.component('edit-product-modal', {
+            template: '#editProductModalTemplate',
+            props: ['apptempproduct'],
+            data() { return {}; },
+            methods: {
+                emitproduct() {
+                    this.$emit('emitproduct', this.apptempproduct);
+                }
+            },
+            created() {
+            }
+        })
+    </script>
+    <!-- vue component 'edit-product-modal template' -->
+    <script type="text/x-template" id="editProductModalTemplate">
+            <div class="modal fade" id="editProductModal" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title">Edit Product</h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <div class="modal-body">
+                      <form>
+                        <div class="form-group">
+                          <label class="w100">
+                            <span>Product title</span>
+                            <input type="text" class="form-control" v-model='apptempproduct.title'>
+                          </label>
+                          <label class="w50">
+                            <span>Category</span>
+                            <input type="text" class="form-control" v-model='apptempproduct.category'>
+                          </label>
+                          <label class="w50">
+                            <span>Unit</span>
+                            <input type="text" class="form-control" v-model='apptempproduct.unit'>
+                          </label>
+                          <label class="w50">
+                            <span>Original Price</span>
+                            <input type="number" class="form-control" v-model='apptempproduct.origin_price'>
+                          </label>
+                          <label class="w50">
+                            <span>Price</span>
+                            <input type="number" class="form-control" v-model='apptempproduct.price'>
+                          </label>
+                          <hr>
+                          <label class="w100">
+                            <span>Description</span>
+                            <textarea rows="3" placeholder="product description" class="form-control" v-model='apptempproduct.description'></textarea>
+                          </label>
+                          <label class="w100">
+                            <span>Content</span>
+                            <textarea rows="3" placeholder="product content" class="form-control" v-model='apptempproduct.content'></textarea>
+                          </label>
+                          <hr>
+                          <label class="w100">
+                            <span>Product Photo</span>
+                            <input type="url" class="form-control" v-model='apptempproduct.imageUrl[0]'>
+                            <img :src="apptempproduct.imageUrl[0]" alt="" class='form__img'>
+                          </label>
+                        </div>
+                      </form>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                      <button type="button" class="btn btn-primary" @click.prevent='emitproduct'>Save</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+    </script>
+
+    <!-- vue component 'delete-product-modal' -->
+    <script type="module">
+        Vue.component('delete-product-modal', {
+            template: '#deleteProductModalTemplate',
+            props: ['apptempproduct'],
+            data() { return {}; },
+            methods: {
+                emitproduct() {
+                    this.$emit('emitproduct');
+                }
+            },
+            created() {
+            }
+        })
+    </script>
+    <!-- vue component 'delete-product-modal template' -->
+    <script type="text/x-template" id="deleteProductModalTemplate">
+                <div class="modal fade" id="deleteProductModal" tabindex="-1" role="dialog" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h5 class="modal-title">Confirm deleting</h5>
+                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                          </button>
+                        </div>
+                        <div class="modal-body">
+                          <form>
+                            <div class="form-group">
+                              <label class="w100">
+                                <b>Are you sure you're deleting this product?</b>
+                              </label>
+                              <hr>
+                              <label class="w100">
+                                <span>Product title: {{apptempproduct.title}}</span>
+                              </label>
+                              <label class="w100">
+                                <span>Product title: {{apptempproduct.category}}</span>
+                              </label>
+                              <label class="w100">
+                                <span>Product title: {{apptempproduct.unit}}</span>
+                              </label>
+                              <label class="w100">
+                                <span>Product title: {{apptempproduct.origin_price}}</span>
+                              </label>
+                              <label class="w100">
+                                <span>Product title: {{apptempproduct.price}}</span>
+                              </label>
+                              <hr>
+                              <label class="w100">
+                                <span>Product title: {{apptempproduct.description}}</span>
+                              </label>
+                              <label class="w100">
+                                <span>Product title: {{apptempproduct.content}}</span>
+                              </label>
+                              <hr>
+                              <label class="w100">
+                                <span>Product Photo</span>
+                                <img :src="apptempproduct.imageUrl[0]" alt="" class='form__img'>
+                              </label>
+                            </div>
+                          </form>
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                          <button type="button" class="btn btn-primary" @click.prevent='emitproduct'>Delete</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+    </script>
+
+    <!-- #app -->
+    <script type="module">
+        new Vue({
+            el: '#app',
+            data: {
+                user: {
+                    token: '',
+                    uuid: 'c1755f54-f16e-4c43-9219-49017fb1e8e8',
+                },
+                products: [],
+                pagination: {},
+                tempProduct: {
+                    title: '',
+                    category: '',
+                    content: '',
+                    description: '',
+                    enabled: true,
+                    imageUrl: [],
+                    id: '',
+                },
+            },
+            methods: {
+                getProducts(whichPage = 1) {
+                    const url = `https://course-ec-api.hexschool.io/api/`;
+                    const api = `${url}${this.user.uuid}/admin/ec/products?page=${whichPage}`;
+                    axios.get(api).then((response) => {
+                        this.products = response.data.data;
+                        this.pagination = response.data.meta.pagination;
+                    });
+                },
+                openAddNewProductModal() {
+                    this.tempProduct = {
+                        title: '',
+                        category: '',
+                        content: '',
+                        description: '',
+                        enabled: true,
+                        imageUrl: [],
+                    };
+                    $('#addNewProductModal').modal('show');
+                },
+                openEditProductModal(whichProduct) {
+                    this.tempProduct = JSON.parse(JSON.stringify(whichProduct));;
+                    this.tempProduct.id = whichProduct.id;
+                    $('#editProductModal').modal('show');
+                },
+                openDeleteProductModal(whichProduct) {
+                    this.tempProduct = JSON.parse(JSON.stringify(whichProduct));;
+                    this.tempProduct.id = whichProduct.id;
+                    $('#deleteProductModal').modal('show');
+                },
+                addNewProduct(newProductObj) {
+                    const url = `https://course-ec-api.hexschool.io/api/`;
+                    const api = `${url}${this.user.uuid}/admin/ec/product`;
+                    axios.post(api, newProductObj).then((res) => {
+                        this.getProducts();
+                    });
+                    $('#addNewProductModal').modal('hide');
+                },
+                editProduct(originalProductObj) {
+                    const id = this.tempProduct.id;
+                    const url = `https://course-ec-api.hexschool.io/api/`;
+                    const api = `${url}${this.user.uuid}/admin/ec/product/${id}`;
+                    axios.patch(api, originalProductObj).then((res) => {
+                        this.getProducts();
+                    });
+                    $('#editProductModal').modal('hide');
+                },
+                deleteProduct(originalProductObj) {
+                    const id = this.tempProduct.id;
+                    const url = `https://course-ec-api.hexschool.io/api/`;
+                    const api = `${url}${this.user.uuid}/admin/ec/product/${id}`;
+                    axios.delete(api).then((res) => {
+                        this.getProducts();
+                    });
+                    $('#deleteProductModal').modal('hide');
+                },
+            },
+            created() {
+                this.user.token = document.cookie.replace(/(?:(?:^|.*;\s*)token\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+                if (this.user.token == '') {
+                    window.location = 'index.html';
+                }
+                axios.defaults.headers.common.Authorization = `Bearer ${this.user.token}`;
+                this.getProducts();
+            }
+        })
+    </script>
+
+
+</body>
+
+</html>

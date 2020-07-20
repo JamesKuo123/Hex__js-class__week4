@@ -1,0 +1,117 @@
+body{
+    background-color: $primaryLight;
+    font-family: 'Roboto', sans-serif;
+}
+
+ul{
+    margin: 0;
+    padding: 0;
+}
+
+.container{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100vh;
+    &.container-products{
+        height: auto;
+        margin-top: 36px;
+    }
+}
+
+.header{
+    display: flex;
+    justify-content: center;
+    margin-bottom: 36px;
+    align-items: center;
+    .login{
+        background-color: $primaryDark;
+        border-radius: 16px;
+        font-size: 2em;
+        color: $white;
+        font-weight: bold;
+        text-align: center;
+        padding: 24px 0;
+        width: 420px;
+    }
+    .addnew{
+        margin-left: 36px;
+    }
+}
+
+.body{
+    display: flex;
+    justify-content: center;
+    .table{
+        width: 100%;
+        th,td{
+            text-align: center;
+        }
+    }
+    &__form{
+        width: 420px;
+        display: flex;
+        flex-direction: column;
+        background-color: $primary;
+        padding: 24px;
+        border-radius: 16px;
+        label{
+            display: flex;
+            align-items: center;
+            margin-bottom: 24px;
+            span{
+                font-weight: bold;
+                margin-right: 16px;
+                font-size: 1.2em;
+            }
+            input{
+                flex-grow: 1;
+                border: 0;
+                border-radius: 8px;
+                padding: 12px 8px;
+            }
+        }
+        button{
+            border: 0;
+            border-radius: 8px;
+            font-size: 1.2em;
+            font-weight: bold;
+            padding: 12px 8px;
+        }
+    }
+}
+
+.footer{
+    margin-top: 36px;
+    margin-bottom: 36px;
+}
+
+th,td{
+    line-height: 38px;
+}
+
+.form-group{
+}
+
+.modal__img{
+    width: 100%;
+}
+
+form{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.w100{
+    width: 100%;
+}
+
+.w50{
+    width: 49%;
+}
+
+.form__img{
+    width: 100%;
+    margin-top: 24px;
+}
